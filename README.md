@@ -6,7 +6,7 @@ With this project you can add a Firebase user account and specify it to a specif
 
 download and add all the libraries below into your project.
 
-'''cpp
+```cpp
 //Libraries needed for WiFiManager (Captive Portal)
 #include <ESPAsyncWiFiManager.h>
 #include <SPIFFS.h>
@@ -25,27 +25,27 @@ download and add all the libraries below into your project.
 //TEST UPDATE SERVER
 #include <Update.h>
 
-'''
+```
 
 - Use a MQTT broker like Eclipse and paste the link into your project.
 
-'''cpp
+```cpp
 const char* mqtt_server = "linktoeclipse";
 
-'''
+```
 
 - Specify the right LED channel
 
-'''cpp
+```cpp
 int ledChannel = 0;
 
-'''
+```
 
 - In this example the password to connect to the captive portal is: Protected.
 
 You can specify another one here:
 
-'''cpp
+```cpp
   if (!wifiManager.autoConnect("Bloom", "Protected")) {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
@@ -58,13 +58,13 @@ You can specify another one here:
   }
 }
 
-'''
+```
 
 - Make a firebase account
 
 Store the credentials from the firebase account in the data folder in the index.html file.
 
-'''cpp
+```cpp
   var config = {
     apiKey: "",
     authDomain: "",
@@ -74,6 +74,6 @@ Store the credentials from the firebase account in the data folder in the index.
     messagingSenderId: ""
   };
   firebase.initializeApp(config);
-
-'''
+  
+```
 
