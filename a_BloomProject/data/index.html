@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Bloom</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+          
+  
+<style>
+  header h1 {
+  display: inline-block;
+  margin: 10px 0;
+}
+header + hr {
+  margin: 10px 0;
+}
+#blooms p, 
+#blooms p.lead{
+  margin: 0;
+}
+.userAuth {
+  display: block;
+  margin: 20px 0 0;
+}
+.modal-header:last-child{
+  border-bottom: 0;
+}
+.card {
+  display: inline-block;
+  margin: 1em;
+  max-width: calc(25% - 2em);
+}
+#blooms {
+  margin-left: -1em;
+  margin-right: -1em;
+  display: flex;
+  flex-wrap: wrap;
+}
+.user-info {
+  display: inline-block;
+  margin: 0 0.5em;
+}
+.user-info img{
+  display: inline-block;
+  max-width: 2em;
+}
+
+.auth-true .authenticated,
+.auth-false .unauthenticated {
+  display: block;
+}
+.auth-true .unauthenticated,
+.auth-false .authenticated {
+  display: none;
+}
+
+#loader{
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  background: #fff;
+}
+progress{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+
+#prg{
+  position: absolute;
+  left: 50%;
+  top: calc(50% - -18px);
+  transform: translate(-50%,-50%);
+}
+
+#loader-logo{
+  width: 70px;
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 48px);
+  transform: translate(-50%,-50%);
+}
+
+.btn-success,.btn,.btn-default{
+  background-color: #000;
+  color: #fff;
+}
+
+.btn-success:hover,
+.btn:hover,
+.btn-default:hover,
+.upload-btn-wrapper .btn:hover{
+  background-color: #fff;
+  color: #000;
+  border:2px solid #000;
+}
+
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.btn-upload{
+  background-color: #fff;
+  color: #000;
+  border:2px solid #000;
+}
+
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+#submit_btn{
+    display: none;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+#upload_btn{
+  padding-top: 20px
+}
+
+#up_succes{
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+
+</style>
+</head>
+
+
+<body class="auth-false">
+  <div class="container">
+    <header class="clearfix">
+      <h1>Bloom</h1>
+      <div class="userAuth unauthenticated pull-right">
+
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#registerModal">Register</button>
+
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#loginModal">Login</button>
+
+      </div>
+      <div class="userAuth authenticated pull-right">
+
+        <button type="button" class="btn btn-success" id="logout">Logout</button>
+      </div>
+    </header>
+    <hr/>
+    <main class="authenticated">
+      <center>
+        <h2>Add Bloom</h2>
+        <p>To add this bloom to your Bloom account, click the button below.</p>
+        <button type="button" id="addbloom" class="btn btn-primary" data-toggle="modal" data-target="#addbloomModal">Add Bloom</button>
+        <h2 id="NewUid" style="display: none;"></h2>
+     
+      <div id="blooms" style="display: none;"></div>
+
+      <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+       <h2 style="padding-top: 40px">Update Bloom</h2>
+        <p>To update this bloom, click the button below and add the binary file</p>
+      <form method='POST' action='/update' enctype='multipart/form-data' id='upload_form'>
+        <div class="upload-btn-wrapper">
+          <button class="btn btn-upload" >Upload .bin</button>
+          <input type="file" name="myfile" id="upload_btn" />
+        </div><br>
+          <input type='submit' value='Update Now' class="btn" id="submit_btn">
+      </form>
+      <div id="loader">
+        <img id="loader-logo" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDIyLjEuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCA2NTkgNjE2IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA2NTkgNjE2OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxwYXRoIGQ9Ik0zMjkuNSw1OUMxOTEuNCw1OSw3OS40LDE3MC40LDc5LjQsMzA3LjhzMTEyLDI0OC44LDI1MC4xLDI0OC44czI1MC4xLTExMS40LDI1MC4xLTI0OC44UzQ2Ny42LDU5LDMyOS41LDU5eiBNMzI5LjUsNDMxLjUKCWMtNjgsMC0xMjMuMS01NS4xLTEyMy4xLTEyMy4xczU1LjEtMTIzLjEsMTIzLjEtMTIzLjFzMTIzLjEsNTUuMSwxMjMuMSwxMjMuMVMzOTcuNSw0MzEuNSwzMjkuNSw0MzEuNXoiLz4KPC9zdmc+Cg==" alt="" />
+        <div id='prg'>0%</div>
+        <progress value="0" max="100" id="prgb"></progress>
+        <h2 id="up_succes">Software is up-to-date</h2>
+      </div>
+         </center>
+    </main>
+  </div>
+
+  <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="Register" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="registerForm" method="POST" action="/logon">
+          <div class="modal-header">
+            <h4 class="modal-title" id="registerModalLabel">Register</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="recipient-name" class="control-label">First Name:</label>
+              <input type="text" class="form-control" id="registerFirstName">
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="control-label">Last Name:</label>
+              <input type="text" class="form-control" id="registerLastName">
+            </div>
+            <div class="form-group">
+              <label for="recipient-name" class="control-label">Email:</label>
+              <input type="text" class="form-control" id="registerEmail">
+            </div>
+            <div class="form-group">
+              <label for="message-text" class="control-label">Password:</label>
+              <input type="password" class="form-control" id="registerPassword">
+            </div>
+            <div class="form-group">
+              <label for="message-text" class="control-label">Confirm Password:</label>
+              <input type="password" class="form-control" id="registerConfirmPassword">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="doRegister">Register</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="Login" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="loginForm" method="POST" action="/logon">
+          <div class="modal-header">
+            <h4 class="modal-title" id="loginModalLabel">Login</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="recipient-name" class="control-label">Email:</label>
+              <input type="text" class="form-control" id="loginEmail">
+            </div>
+            <div class="form-group">
+              <label for="message-text" class="control-label">Password:</label>
+              <input type="password" class="form-control" id="loginPassword">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="doLogin">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addbloomModal" tabindex="-1" role="dialog" aria-labelledby="Add bloom" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+
+        <form method="POST" id="bloomForm" name="bloomForm" >
+          <div class="modal-header">
+            <h4 class="modal-title" id="addbloomModalLabel">Add Bloom</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            <button type="submit" class="btn btn-primary addValue">Yes</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="Message" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="messageModalLabel">Message</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-footer">
+          <div class="pre-auth">
+            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+            <span class="">
+              <button type="submit" class="btn btn-primary" data-dismiss="modal" data-toggle="modal" data-target="#registerModal">Register</button>
+              <button type="submit" class="btn btn-success" data-dismiss="modal" data-toggle="modal" data-target="#loginModal">Login</button>
+            </span>
+          </div>
+          <div class="post-auth"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+ <script src="https://code.jquery.com/jquery-3.3.1.js" ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" ></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" ></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+
+  <!-- blooms Store JavaScript -->
+  <script>
+    var provider = new firebase.auth.GoogleAuthProvider();
+
+    firebase.auth().signInWithPopup(provider).then(function(result) {
+  // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = result.credential.accessToken;
+      // The signed-in user info.
+      var user = result.user;
+      // ...
+    }).catch(function(error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      // ...
+    });
+    firebase.auth().signInWithRedirect(provider);
+    firebase.auth().getRedirectResult().then(function(result) {
+  if (result.credential) {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    var token = result.credential.accessToken;
+    // ...
+  }
+  // The signed-in user info.
+  var user = result.user;
+}).catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  // The email of the user's account used.
+  var email = error.email;
+  // The firebase.auth.AuthCredential type that was used.
+  var credential = error.credential;
+  // ...
+});
+  </script>
+
+<script>
+  $('#upload_btn').click(function(e){
+    $('#submit_btn').css("display", "unset");
+  });
+</script>
+
+ <script>
+  $('#upload_form').submit(function(e){
+  e.preventDefault();
+  $('#loader').css("display", "unset");
+  var form = $('#upload_form')[0];
+  var data = new FormData(form);
+   $.ajax({
+    url: '/update',
+    type: 'POST',
+    data: data,
+    contentType: false,
+    processData:false,
+    xhr: function() {
+      var xhr = new window.XMLHttpRequest();
+      xhr.upload.addEventListener('progress', function(evt) {
+        if (evt.lengthComputable) {
+         
+          var per = evt.loaded / evt.total;
+          $('#prg').html(Math.round(per*100) + '%');
+          $('#prgb').val(Math.round(per*100));
+          
+        }
+      }, false);
+    return xhr;
+    },
+  success:function(d, s) {
+  console.log('success!');
+  $("#prgb").css("display", "none"); 
+  $("#prg").css("display", "none"); 
+  $("#up_succes").css("display", "unset"); 
+  },
+error: function (a, b, c) {
+ }
+ });
+ });
+ </script>
+   <script>
+    function GetFileText(path){
+        var result = null;
+
+
+        $.ajax({
+            url: path,
+            method: 'GET',
+            cache: false,
+            async: false,
+            success: function (data){
+               result = data;
+            }
+        });
+
+        return result;
+    }
+
+</script>
+  <script>
+$(document).ready(function(){
+
+ 
+  //initialize the firebase app
+  var config = {
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: ""
+  };
+  firebase.initializeApp(config);
+
+  //create firebase references
+  var Auth = firebase.auth(); 
+  var dbRef = firebase.database();
+  var bloomsRef = dbRef.ref('blooms')
+  var usersRef = dbRef.ref('users')
+  var auth = null;
+
+
+  //Register
+  $('#registerForm').on('submit', function (e) {
+    e.preventDefault();
+    $('#registerModal').modal('hide');
+    $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModal').modal('show');
+    var data = {
+      email: $('#registerEmail').val(), //get the email from Form
+      firstName: $('#registerFirstName').val(), // get firstName
+      lastName: $('#registerLastName').val(), // get lastName
+    };
+    var passwords = {
+      password : $('#registerPassword').val(), //get the pass from Form
+      cPassword : $('#registerConfirmPassword').val(), //get the confirmPass from Form
+    }
+    if( data.email != '' && passwords.password != ''  && passwords.cPassword != '' ){
+      if( passwords.password == passwords.cPassword ){
+        //create the user
+        
+        firebase.auth()
+          .createUserWithEmailAndPassword(data.email, passwords.password)
+          .then(function(user) {
+            return user.updateProfile({
+              displayName: data.firstName + ' ' + data.lastName
+            })
+          })
+          .then(function(user){
+            //now user is needed to be logged in to save data
+            auth = user;
+            //now saving the profile data
+            usersRef.child(user.uid).set(data)
+              .then(function(){
+                console.log("User Information Saved:", user.uid);
+              })
+            $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+            
+            $('#messageModal').modal('hide');
+          })
+          .catch(function(error){
+            console.log("Error creating user:", error);
+            $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
+          });
+      } else {
+        //password and confirm password didn't match
+        $('#messageModalLabel').html(spanText("ERROR: Passwords didn't match", ['danger']))
+      }
+    } 
+  });
+
+  //Login
+  $('#loginForm').on('submit', function (e) {
+    e.preventDefault();
+    $('#loginModal').modal('hide');
+    $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModal').modal('show');
+
+    if( $('#loginEmail').val() != '' && $('#loginPassword').val() != '' ){
+      //login the user
+      var data = {
+        email: $('#loginEmail').val(),
+        password: $('#loginPassword').val()
+      };
+      firebase.auth().signInWithEmailAndPassword(data.email, data.password)
+        .then(function(authData) {
+          auth = authData;
+          $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+          $('#messageModal').modal('hide');
+        })
+        .catch(function(error) {
+          console.log("Login Failed!", error);
+          $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
+        });
+    }
+  });
+
+  $('#logout').on('click', function(e) {
+    e.preventDefault();
+    firebase.auth().signOut()
+  });
+
+  //save bloom
+  $('#bloomForm').on('submit', function( event ) {  
+    event.preventDefault();
+
+    if( auth != null ){
+
+      var AlreadyExistsChecker = $('#card-title').html();
+
+      if( GetFileText('/addUser.txt') != AlreadyExistsChecker ){
+        bloomsRef.child(auth.uid)
+          .push({
+              bloomId: GetFileText('/addUser.txt')
+            
+          })
+          document.bloomForm.reset();
+        
+      } else {
+        alert('Already added.' + AlreadyExistsChecker);
+      }
+    } else {
+      alert('Login to add device.');
+    }
+  });
+
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      document.getElementById("NewUid").innerHTML = user.uid;
+      auth = user;
+      $('body').removeClass('auth-false').addClass('auth-true');
+      usersRef.child(user.uid).once('value').then(function (data) {
+        var info = data.val();
+        if(user.photoUrl) {
+          $('.user-info img').show();
+          $('.user-info img').attr('src', user.photoUrl);
+          $('.user-info .user-name').hide();
+        } else if(user.displayName) {
+          $('.user-info img').hide();
+          $('.user-info').append('<span class="user-name">'+user.displayName+'</span>');
+        } else if(info.firstName) {
+          $('.user-info img').hide();
+          $('.user-info').append('<span class="user-name">'+info.firstName+'</span>');
+        }
+      });
+      bloomsRef.child(user.uid).on('child_added', onChildAdd);
+    } else {
+      // No user is signed in.
+      $('body').removeClass('auth-true').addClass('auth-false');
+      auth && bloomsRef.child(auth.uid).off('child_added', onChildAdd);
+      $('#blooms').html('');
+      auth = null;
+    }
+  });
+});
+
+function onChildAdd (snap) {
+  $('#blooms').append(addBloomHtmlFromObject(snap.key, snap.val()));
+}
+ 
+//prepare bloom object's HTML
+function addBloomHtmlFromObject(key, bloom){
+  return '<div class="card bloom" style="width: 18rem;" id="'+key+'">'
+    + '<div class="card-body">'
+      + '<h5 class="card-title" id="card-title">' + bloom.bloomId + '</h5>'
+      // + '<a href="#" class="card-link">Card link</a>'
+      // + '<a href="#" class="card-link">Another link</a>'
+    + '</div>'
+  + '</div>';
+}
+
+function spanText(textStr, textClasses) {
+  var classNames = textClasses.map(c => 'text-'+c).join(' ');
+  return '<span class="'+classNames+'">'+ textStr + '</span>';
+}
+
+</script>
+<script>
+let sendBr = document.querySelector("#addbloom");
+var connection = new WebSocket('ws://' + location.hostname + ':81/', ['arduino']);
+connection.onopen = function () {
+  connection.send('Connect ' + new Date());
+};
+connection.onerror = function (error) {
+  location.reload();
+  console.log('WebSocket Error ', error);
+  alert('Error: \nLost connection. Please reload this page.');
+};
+connection.onmessage = function (e) {
+  console.log('Server: ', e.data);
+};
+connection.onclose = function () {
+  connection.send('Connect ' + new Date());
+  console.log('WebSocket connection closed');
+  alert('Connection closed: \nLost connection. Please reload this page.');
+};
+
+sendBr.onclick = function() {
+  var b = document.getElementById('NewUid').innerHTML;
+
+  var brightness = b;
+  console.log('Brightness on change: ' + brightness);
+  connection.send(["4", brightness]);
+}
+</script>
+</body>
+</html>
