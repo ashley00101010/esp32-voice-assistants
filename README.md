@@ -2,7 +2,7 @@
 
 With this project you can add a Firebase user account and specify it to a specific ESP32. This happens in the local webserver on the ESP32, the ESP32 will add it's Wi-Fi MAC address to the realtime database on Firebase and the will get the UID from a Firebase account and store it on the ESP32. This not only wil make a specific user link, but it wil also make it possible to add more ESP32 to a single account.
 
-#Get started
+## Get started
 
 download and add all the libraries below into your project.
 
